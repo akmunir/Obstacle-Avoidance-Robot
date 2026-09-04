@@ -6,16 +6,13 @@
 #include <HardwareSerial.h>
 #include "Adafruit_ATParser.h"
 #include "packetParser.h"
-#include <motor.h>
+#include "motor.h"
 #include "bluetoothController.h"
+#include "movementSystem.h"
 
 #define BLUEFRUIT_HWSERIAL_NAME Serial1
 #define BLUEFRUIT_UART_MODE_PIN -1
 #define BLE_READPACKET_TIMEOUT 500
-#define E1 5
-#define M1 4
-#define E2 6
-#define M2 7
 #define switchPin 3
 #define LED 22
 
@@ -28,14 +25,11 @@ uint8_t input = '0';
 uint16_t pwm = 150;
 bool bluetoothToggle = false;
 
-Motor leftMotor = Motor(E2, M2);
-Motor rightMotor = Motor(E1, M1);
+
 void initBluetoothControl()
 {
   Serial.begin(115200);
   ble.begin(115200);
-  leftMotor.begin();
-  rightMotor.begin();
   pinMode(switchPin, INPUT_PULLUP);
   pinMode(LED, OUTPUT);
   //attachInterrupt(digitalPinToInterrupt(switchPin), toggleMode, CHANGE);
@@ -66,13 +60,13 @@ void initBluetoothControl()
 
 bool toggleMode(bool switchState) {
     if (switchState == 1) {
-    Serial.println("on");
+    //Serial.println("on");
     bluetoothToggle = true;
     digitalWrite(LED, HIGH);
   } else {
     bluetoothToggle = false;
     digitalWrite(LED, LOW);
-    Serial.println("off");
+    //Serial.println("off");
   }
   return bluetoothToggle;
 }
@@ -85,7 +79,7 @@ void bluetoothController() {
     case 5: // forward
       moveForward(pwm);
       waitForButtonRelease();
-      Serial.println("stopped");
+      //Serial.println("stopped");
       stop();
       break;
     case 6: // backwards
@@ -130,30 +124,7 @@ void getControllerInput()
     }
   }
 }
-void moveForward(uint16_t pwm) {
-  leftMotor.move(pwm, 1);
-  rightMotor.move(pwm, 1);
-}
 
-void moveBackwards(uint16_t pwm) {
-  leftMotor.move(pwm, 0);
-  rightMotor.move(pwm, 0);
-}
-
-void moveLeft(uint16_t pwm) {
-  leftMotor.move(pwm, 0);
-  rightMotor.move(pwm, 1);
-}
-
-void moveRight(uint16_t pwm) {
-  leftMotor.move(pwm, 1);
-  rightMotor.move(pwm, 0);
-}
-
-void stop() {
-  leftMotor.stop();
-  rightMotor.stop();
-}
 
 void waitForButtonRelease()
 {
